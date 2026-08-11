@@ -989,28 +989,3 @@
     </script>
 </body>
 </html>
-                const name = card.getAttribute('data-name');
-                card.style.display = (name && name.includes(query)) ? 'flex' : 'none';
-            });
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            const splash = document.getElementById("splash-screen");
-            setTimeout(() => splash.classList.add("hide-splash"), 1200);
-
-            if (!sessionStorage.getItem('popupShown')) {
-                setTimeout(() => {
-                    document.getElementById('popupModal').style.display = 'flex';
-                }, 2000);
-            }
-        });
-
-        function closePopup() {
-            document.getElementById('popupModal').style.display = 'none';
-            sessionStorage.setItem('popupShown', 'true');
-        }
-
-        renderApps();
-    </script>
-</body>
-</html>
