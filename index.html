@@ -91,7 +91,7 @@
             letter-spacing: 3px;
         }
 
-        /* Verification Gate Overlay (20-Char & One-Time Use System) */
+        /* Verification Gate Overlay */
         #verify-gate {
             position: fixed;
             top: 0;
@@ -209,7 +209,7 @@
             font-size: 12px;
             margin-top: 12px;
             font-weight: 600;
-            color: var(--neon-cyan);
+            color: var(--neon-pink);
             min-height: 18px;
         }
 
@@ -600,13 +600,13 @@
 
     <div id="toast">Notification</div>
 
-    <!-- Device Verification Gate (20-Char Mandatory & One-Time Use OTP System) -->
+    <!-- Verification Gate (Stealth One-Time Use System) -->
     <div id="verify-gate">
         <div class="verify-card">
             <h3 class="verify-title">Device Verification</h3>
-            <p class="verify-text">Enter exact 20-character code (One-time use, valid for 24 hours).</p>
+            <p class="verify-text">Enter your access code to unlock the application portal.</p>
             
-            <input type="text" id="accessKeyInput" class="verify-input" placeholder="ENTER 20-CHAR CODE" maxlength="20" autocomplete="off">
+            <input type="text" id="accessKeyInput" class="verify-input" placeholder="ENTER ACCESS CODE" autocomplete="off">
             
             <button class="verify-secondary-btn" onclick="openAroLinks()">
                 <i class="fa-solid fa-key"></i> Get Code
@@ -753,29 +753,23 @@
                 });
         }
 
-        // --- 20-CHARACTER & ONE-TIME USE VERIFICATION SYSTEM ---
+        // --- STEALTH ONE-TIME USE VERIFICATION SYSTEM ---
         function verifyUserKey() {
             const inputVal = document.getElementById('accessKeyInput').value.trim();
             const msgDiv = document.getElementById("status-msg");
             const usedCodes = JSON.parse(localStorage.getItem('used_madx_codes') || "[]");
             
-            // 1. Strict 20-Character Length Check
-            if (inputVal.length !== 20) {
+            // Hidden condition: code must be exactly 20 chars and not used yet
+            const isValidLength = (inputVal.length === 20);
+            const isUsed = usedCodes.includes(inputVal);
+
+            if (!isValidLength || isUsed) {
                 msgDiv.style.color = "var(--neon-pink)";
-                msgDiv.innerText = "Error: Code must be exactly 20 characters!";
-                showToast("Error: Code must be exactly 20 characters!");
+                msgDiv.innerText = "Invalid Code!";
                 return;
             }
 
-            // 2. One-Time Use Check (Prevents reusing the same code)
-            if (usedCodes.includes(inputVal)) {
-                msgDiv.style.color = "var(--neon-pink)";
-                msgDiv.innerText = "Error: This code has already been used!";
-                showToast("Error: This code is already expired/used!");
-                return;
-            }
-
-            // 3. Grant 24-Hour Access and Mark Code as Used
+            // Grant 24-Hour Access and Mark Code as Used
             const currentTime = new Date().getTime();
             const twentyFourHours = 24 * 60 * 60 * 1000;
             
@@ -970,6 +964,31 @@
         function filterApps() {
             const query = document.getElementById('searchInput').value.toLowerCase();
             document.querySelectorAll('.app-card').forEach(card => {
+                const name = card.getAttribute('data-name');
+                card.style.display = (name && name.includes(query)) ? 'flex' : 'none';
+            });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            const splash = document.getElementById("splash-screen");
+            setTimeout(() => splash.classList.add("hide-splash"), 1200);
+
+            if (!sessionStorage.getItem('popupShown')) {
+                setTimeout(() => {
+                    document.getElementById('popupModal').style.display = 'flex';
+                }, 2000);
+            }
+        });
+
+        function closePopup() {
+            document.getElementById('popupModal').style.display = 'none';
+            sessionStorage.setItem('popupShown', 'true');
+        }
+
+        renderApps();
+    </script>
+</body>
+</html>
                 const name = card.getAttribute('data-name');
                 card.style.display = (name && name.includes(query)) ? 'flex' : 'none';
             });
