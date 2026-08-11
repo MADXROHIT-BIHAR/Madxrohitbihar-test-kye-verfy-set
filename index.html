@@ -91,7 +91,7 @@
             letter-spacing: 3px;
         }
 
-        /* Verification Gate Overlay (Using Arolinks API) */
+        /* Verification Gate Overlay (20-Char & One-Time Use System) */
         #verify-gate {
             position: fixed;
             top: 0;
@@ -600,16 +600,16 @@
 
     <div id="toast">Notification</div>
 
-    <!-- Device Verification Gate (With Arolinks API & New Target URL) -->
+    <!-- Device Verification Gate (20-Char Mandatory & One-Time Use OTP System) -->
     <div id="verify-gate">
         <div class="verify-card">
             <h3 class="verify-title">Device Verification</h3>
-            <p class="verify-text">Get Key par click karke key copy karein aur yahan paste karein (24 Hours Validity).</p>
+            <p class="verify-text">Enter exact 20-character code (One-time use, valid for 24 hours).</p>
             
-            <input type="text" id="accessKeyInput" class="verify-input" placeholder="ENTER ACCESS KEY" autocomplete="off">
+            <input type="text" id="accessKeyInput" class="verify-input" placeholder="ENTER 20-CHAR CODE" maxlength="20" autocomplete="off">
             
             <button class="verify-secondary-btn" onclick="openAroLinks()">
-                <i class="fa-solid fa-key"></i> Get Key
+                <i class="fa-solid fa-key"></i> Get Code
             </button>
             
             <button class="verify-main-btn" onclick="verifyUserKey()">
@@ -715,7 +715,7 @@
     </div>
 
     <script>
-        // --- 24-HOUR DEVICE LOCK SECURITY CHECK ---
+        // --- 24-HOUR DEVICE LOCK & SECURITY CHECK ---
         (function checkDeviceAccess() {
             const expiryTime = localStorage.getItem('madx_access_expiry');
             const currentTime = new Date().getTime();
@@ -727,10 +727,10 @@
             }
         })();
 
-        // Arolinks API Integration with New Target URL
+        // Arolinks API Integration with Target URL
         function openAroLinks() {
             const apiToken = "828c34db80ec53e94e7174f5f52e0b274a38ab2d";
-            const targetUrl = "https://madxrohitbihari.github.io/KYE-SYSTEM-GRENRTED/";
+            const targetUrl = "https://madxrohit-bihar.github.io/MadxrohitbiharApp-/";
             const apiUrl = `https://arolinks.com/api?api=${apiToken}&url=${encodeURIComponent(targetUrl)}`;
 
             const msgDiv = document.getElementById("status-msg");
@@ -753,34 +753,45 @@
                 });
         }
 
+        // --- 20-CHARACTER & ONE-TIME USE VERIFICATION SYSTEM ---
         function verifyUserKey() {
             const inputVal = document.getElementById('accessKeyInput').value.trim();
             const msgDiv = document.getElementById("status-msg");
+            const usedCodes = JSON.parse(localStorage.getItem('used_madx_codes') || "[]");
             
-            if (inputVal.length >= 4) {
-                const currentTime = new Date().getTime();
-                const twentyFourHours = 24 * 60 * 60 * 1000;
-                
-                localStorage.setItem('madx_access_expiry', (currentTime + twentyFourHours).toString());
-                
-                showToast("Access Granted Successfully!");
-                
-                const gate = document.getElementById('verify-gate');
-                gate.style.opacity = '0';
-                gate.style.transition = 'opacity 0.4s ease';
-                setTimeout(() => {
-                    gate.style.display = 'none';
-                }, 400);
-            } else {
+            // 1. Strict 20-Character Length Check
+            if (inputVal.length !== 20) {
                 msgDiv.style.color = "var(--neon-pink)";
-                msgDiv.innerText = "Invalid Key!";
-                showToast("Invalid Key! Please check and try again.");
-                const inputEl = document.getElementById('accessKeyInput');
-                inputEl.style.borderColor = "var(--neon-pink)";
-                setTimeout(() => {
-                    inputEl.style.borderColor = "var(--border-neon)";
-                }, 1000);
+                msgDiv.innerText = "Error: Code must be exactly 20 characters!";
+                showToast("Error: Code must be exactly 20 characters!");
+                return;
             }
+
+            // 2. One-Time Use Check (Prevents reusing the same code)
+            if (usedCodes.includes(inputVal)) {
+                msgDiv.style.color = "var(--neon-pink)";
+                msgDiv.innerText = "Error: This code has already been used!";
+                showToast("Error: This code is already expired/used!");
+                return;
+            }
+
+            // 3. Grant 24-Hour Access and Mark Code as Used
+            const currentTime = new Date().getTime();
+            const twentyFourHours = 24 * 60 * 60 * 1000;
+            
+            localStorage.setItem('madx_access_expiry', (currentTime + twentyFourHours).toString());
+            
+            usedCodes.push(inputVal);
+            localStorage.setItem('used_madx_codes', JSON.stringify(usedCodes));
+            
+            showToast("Access Granted Successfully!");
+            
+            const gate = document.getElementById('verify-gate');
+            gate.style.opacity = '0';
+            gate.style.transition = 'opacity 0.4s ease';
+            setTimeout(() => {
+                gate.style.display = 'none';
+            }, 400);
         }
 
         const defaultNewImg = "https://i.postimg.cc/8kv2Mtxv/IMG-20260731-232847-281.jpg";
